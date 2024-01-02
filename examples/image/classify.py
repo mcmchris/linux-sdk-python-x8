@@ -132,30 +132,10 @@ def main(argv):
             if (runner):
                 runner.stop()
 
-def get_inference_speed():
-    while True:
-        # print(inferenceSpeed)
-        yield "data:" + str(inferenceSpeed) + "\n\n"
-        time.sleep(0.1)
-
-def get_people():
-    while True:
-        # print(countPeople)
-        yield "data:" + str(countPeople) + "\n\n"
-        time.sleep(0.1)
-
 @app.route('/video_feed')
 def video_feed():
     #Video streaming route. Put this in the src attribute of an img tag
     return Response(main(sys.argv[1:]), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/inference_speed')
-def inference_speed():
-	return Response(get_inference_speed(), mimetype= 'text/event-stream')
-
-@app.route('/people_counter')
-def people_counter():
-	return Response(get_people(), mimetype= 'text/event-stream')
 
 
 @app.route('/')

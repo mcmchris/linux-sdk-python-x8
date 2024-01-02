@@ -22,12 +22,6 @@
             
           </div>
         </div>
-
-        <div class="col-lg-6 mx-auto">
-          <p class="lead mb-4"></p>
-          <p class="lead">Inference speed: <span id="inference_speed"></span> ms</p>
-      
-        </div>
     </div>
 
     <div class="container my-5">
@@ -36,16 +30,5 @@
       </div>
     </div>
 
-
-<script type="text/javascript">
-	var sourceInference = new EventSource("/inference_speed");
-	sourceInference.onmessage = function(event) {
-		document.getElementById("inference_speed").textContent=event.data
-	}
-    var sourcePeople = new EventSource("/people_counter");
-	sourcePeople.onmessage = function(event) {
-		document.getElementById("people_counter").textContent=event.data
-	}
-</script>
 </body>
 </html>
