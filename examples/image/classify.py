@@ -14,7 +14,8 @@ app = Flask(__name__, static_folder='templates/assets')
 
 runner = None
 # if you don't want to see a camera preview, set this to False
-show_camera = True
+show_camera = False
+
 if (sys.platform == 'linux' and not os.environ.get('DISPLAY')):
     show_camera = False
 
@@ -49,6 +50,8 @@ def help():
     print('python classify.py <path_to_model.eim> <Camera port ID, only required when more than 1 camera is present>')
 
 def main(argv):
+    global countPeople
+    global inferenceSpeed
     try:
         opts, args = getopt.getopt(argv, "h", ["--help"])
     except getopt.GetoptError:
@@ -118,10 +121,11 @@ def main(argv):
                         print('\t%s (%.2f): x=%d y=%d w=%d h=%d' % (bb['label'], bb['value'], bb['x'], bb['y'], bb['width'], bb['height']))
                         img = cv2.rectangle(img, (bb['x'], bb['y']), (bb['x'] + bb['width'], bb['y'] + bb['height']), (255, 0, 0), 1)
 
-                if (show_camera):
-                    cv2.imshow('edgeimpulse', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-                    if cv2.waitKey(1) == ord('q'):
-                        break
+                
+                ret, buffer = cv2.imencode('.jpg', img)
+                frame = buffer.tobytes()
+                yield (b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
                 next_frame = now() + 100
         finally:
@@ -143,7 +147,7 @@ def get_people():
 @app.route('/video_feed')
 def video_feed():
     #Video streaming route. Put this in the src attribute of an img tag
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(main(sys.argv[1:]), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/inference_speed')
 def inference_speed():
