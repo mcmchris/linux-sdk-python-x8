@@ -7,7 +7,10 @@ import os
 import sys, getopt
 import signal
 import time
+from flask import Flask, render_template, Response
 from edge_impulse_linux.image import ImageImpulseRunner
+
+app = Flask(__name__, static_folder='templates/assets')
 
 runner = None
 # if you don't want to see a camera preview, set this to False
@@ -125,5 +128,24 @@ def main(argv):
             if (runner):
                 runner.stop()
 
+@app.route('/video_feed')
+def video_feed():
+    #Video streaming route. Put this in the src attribute of an img tag
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/inference_speed')
+def inference_speed():
+	return Response(get_inference_speed(), mimetype= 'text/event-stream')
+
+@app.route('/people_counter')
+def people_counter():
+	return Response(get_people(), mimetype= 'text/event-stream')
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 if __name__ == "__main__":
    main(sys.argv[1:])
+   app.run(host="0.0.0.0", port=4912, debug=True) 
