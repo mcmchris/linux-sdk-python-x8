@@ -114,21 +114,14 @@ def main(argv):
                         score = res['result']['classification'][label]
                         print('%s: %.2f\t' % (label, score), end='')
                     print('', flush=True)
-
-                elif "bounding_boxes" in res["result"].keys():
-                    print('Found %d bounding boxes (%d ms.)' % (len(res["result"]["bounding_boxes"]), res['timing']['dsp'] + res['timing']['classification']))
-                    for bb in res["result"]["bounding_boxes"]:
-                        print('\t%s (%.2f): x=%d y=%d w=%d h=%d' % (bb['label'], bb['value'], bb['x'], bb['y'], bb['width'], bb['height']))
-                        img = cv2.rectangle(img, (bb['x'], bb['y']), (bb['x'] + bb['width'], bb['y'] + bb['height']), (255, 0, 0), 1)
-
-                
+               
                 ret, buffer = cv2.imencode('.jpg', img)
                 #buffer = cv2.cvtColor(ret, cv2.COLOR_BGR2GRAY)
                 frame = buffer.tobytes()
                 yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
-                next_frame = now() + 500
+                next_frame = now() + 10
         finally:
             if (runner):
                 runner.stop()
