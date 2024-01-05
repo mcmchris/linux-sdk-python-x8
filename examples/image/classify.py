@@ -128,7 +128,7 @@ def main(argv):
                 yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
-                next_frame = now() + 10
+                next_frame = now() + 500
         finally:
             if (runner):
                 runner.stop()
