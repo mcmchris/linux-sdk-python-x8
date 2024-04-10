@@ -115,8 +115,9 @@ def main(argv):
                         print('%s: %.2f\t' % (label, score), end='')
                     print('', flush=True)
                
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
                 ret, buffer = cv2.imencode('.jpg', img)
-                #buffer = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+                
                 frame = buffer.tobytes()
                 yield (b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
