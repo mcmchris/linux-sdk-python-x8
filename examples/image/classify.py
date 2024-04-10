@@ -103,8 +103,8 @@ def main(argv):
             next_frame = 0 # limit to ~10 fps here
 
             for res, img in runner.classifier(videoCaptureDeviceId):
-                #if (next_frame > now()):
-                    #time.sleep((next_frame - now()) / 1000)
+                if (next_frame > now()):
+                    time.sleep((next_frame - now()) / 1000)
 
                 # print('classification runner response', res)
 
