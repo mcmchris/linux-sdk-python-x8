@@ -7,15 +7,11 @@ import os
 import sys, getopt
 import signal
 import time
-from flask import Flask, render_template, Response
 from edge_impulse_linux.image import ImageImpulseRunner
-
-app = Flask(__name__, static_folder='templates/assets')
 
 runner = None
 # if you don't want to see a camera preview, set this to False
-show_camera = False
-
+show_camera = True
 if (sys.platform == 'linux' and not os.environ.get('DISPLAY')):
     show_camera = False
 
@@ -50,8 +46,6 @@ def help():
     print('python classify.py <path_to_model.eim> <Camera port ID, only required when more than 1 camera is present>')
 
 def main(argv):
-    global countPeople
-    global inferenceSpeed
     try:
         opts, args = getopt.getopt(argv, "h", ["--help"])
     except getopt.GetoptError:
@@ -114,29 +108,22 @@ def main(argv):
                         score = res['result']['classification'][label]
                         print('%s: %.2f\t' % (label, score), end='')
                     print('', flush=True)
-               
-                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                ret, buffer = cv2.imencode('.jpg', img)
-                
-                frame = buffer.tobytes()
-                yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
-                next_frame = now() + 10
+                elif "bounding_boxes" in res["result"].keys():
+                    print('Found %d bounding boxes (%d ms.)' % (len(res["result"]["bounding_boxes"]), res['timing']['dsp'] + res['timing']['classification']))
+                    for bb in res["result"]["bounding_boxes"]:
+                        print('\t%s (%.2f): x=%d y=%d w=%d h=%d' % (bb['label'], bb['value'], bb['x'], bb['y'], bb['width'], bb['height']))
+                        img = cv2.rectangle(img, (bb['x'], bb['y']), (bb['x'] + bb['width'], bb['y'] + bb['height']), (255, 0, 0), 1)
+
+                if (show_camera):
+                    cv2.imshow('edgeimpulse', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+                    if cv2.waitKey(1) == ord('q'):
+                        break
+
+                next_frame = now() + 100
         finally:
             if (runner):
                 runner.stop()
 
-@app.route('/video_feed')
-def video_feed():
-    #Video streaming route. Put this in the src attribute of an img tag
-    return Response(main(sys.argv[1:]), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 if __name__ == "__main__":
-   #main(sys.argv[1:])
-   app.run(host="0.0.0.0", port=4912, debug=True) 
+   main(sys.argv[1:])
