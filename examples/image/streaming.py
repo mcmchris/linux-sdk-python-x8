@@ -96,9 +96,9 @@ def main(argv):
         
         ret, img = camera.read()
         #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        ret, buffer = cv2.imencode('.jpg', img)
+        #ret, buffer = cv2.imencode('.jpg', img)
         
-        frame = buffer.tobytes()
+        frame = img.tobytes()
         yield (b'--frame\r\n'
             b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
