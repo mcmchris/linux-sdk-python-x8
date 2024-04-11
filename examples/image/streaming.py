@@ -67,8 +67,8 @@ def main(argv):
         help()
         sys.exit(2)
 
-    if len(args)>= 2:
-        videoCaptureDeviceId = int(args[1])
+    if len(args)>= 1:
+        videoCaptureDeviceId = int(args[0])
     else:
         port_ids = get_webcams()
         if len(port_ids) == 0:
@@ -90,7 +90,7 @@ def main(argv):
 
     next_frame = 0 # limit to ~10 fps here
 
-    for res, img in camera.read()[0]:
+    for res, img in range(1000):
         if (next_frame > now()):
             time.sleep((next_frame - now()) / 1000)
         
