@@ -90,7 +90,7 @@ def main(argv):
 
     next_frame = 0 # limit to ~10 fps here
 
-    for res, img in camera.read():
+    for res, img in camera.read()[0]:
         if (next_frame > now()):
             time.sleep((next_frame - now()) / 1000)
         
