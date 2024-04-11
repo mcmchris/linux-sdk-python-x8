@@ -49,67 +49,60 @@ signal.signal(signal.SIGINT, sigint_handler)
 def help():
     print('python classify.py <path_to_model.eim> <Camera port ID, only required when more than 1 camera is present>')
 
-def main(argv):
-    global countPeople
-    global inferenceSpeed
-    try:
-        opts, args = getopt.getopt(argv, "h", ["--help"])
-    except getopt.GetoptError:
+
+global countPeople
+global inferenceSpeed
+try:
+    opts, args = getopt.getopt(argv, "h", ["--help"])
+except getopt.GetoptError:
+    help()
+    sys.exit(2)
+
+for opt, arg in opts:
+    if opt in ('-h', '--help'):
         help()
-        sys.exit(2)
+        sys.exit()
 
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            help()
-            sys.exit()
+if len(args) == 0:
+    help()
+    sys.exit(2)
 
-    if len(args) == 0:
-        help()
-        sys.exit(2)
+if len(args)>= 1:
+    videoCaptureDeviceId = int(args[0])
+else:
+    port_ids = get_webcams()
+    if len(port_ids) == 0:
+        raise Exception('Cannot find any webcams')
+    if len(args)<= 1 and len(port_ids)> 1:
+        raise Exception("Multiple cameras found. Add the camera port ID as a second argument to use to this script")
+    videoCaptureDeviceId = int(port_ids[0])
 
-    if len(args)>= 1:
-        videoCaptureDeviceId = int(args[0])
-    else:
-        port_ids = get_webcams()
-        if len(port_ids) == 0:
-            raise Exception('Cannot find any webcams')
-        if len(args)<= 1 and len(port_ids)> 1:
-            raise Exception("Multiple cameras found. Add the camera port ID as a second argument to use to this script")
-        videoCaptureDeviceId = int(port_ids[0])
+camera = cv2.VideoCapture(videoCaptureDeviceId)
+ret = camera.read()[0]
+if ret:
+    backendName = camera.getBackendName()
+    w = camera.get(3)
+    h = camera.get(4)
+    print("Camera %s (%s x %s) in port %s selected." %(backendName,h,w, videoCaptureDeviceId))
+    camera.release()
+else:
+    raise Exception("Couldn't initialize selected camera.")
 
-    camera = cv2.VideoCapture(videoCaptureDeviceId)
-    ret = camera.read()[0]
-    if ret:
-        backendName = camera.getBackendName()
-        w = camera.get(3)
-        h = camera.get(4)
-        print("Camera %s (%s x %s) in port %s selected." %(backendName,h,w, videoCaptureDeviceId))
-        camera.release()
-    else:
-        raise Exception("Couldn't initialize selected camera.")
-
-    next_frame = 0 # limit to ~10 fps here
-
-    while(True):
-        if (next_frame > now()):
-            time.sleep((next_frame - now()) / 1000)
-        
-        ret, img = camera.read()
-        #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        #ret, buffer = cv2.imencode('.jpg', img)
-        
-        frame = img.tobytes()
-        yield (b'--frame\r\n'
-            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
-
-        next_frame = now() + 10
-        if cv2.waitKey(1) == ord('q'):
-            break
+def generate():
+     while True:
+          ret, frame = camera.read()
+          if ret:
+               gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+               (flag, encodedImage) = cv2.imencode(".jpg", frame)
+               if not flag:
+                    continue
+               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                    bytearray(encodedImage) + b'\r\n')
 
 @app.route('/video_feed')
 def video_feed():
     #Video streaming route. Put this in the src attribute of an img tag
-    return Response(main(sys.argv[1:]), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/')
