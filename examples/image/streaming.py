@@ -53,15 +53,7 @@ def help():
 videoCaptureDeviceId = int(1)
 
 camera = cv2.VideoCapture(videoCaptureDeviceId)
-ret = camera.read()[0]
-if ret:
-    backendName = camera.getBackendName()
-    w = camera.get(3)
-    h = camera.get(4)
-    print("Camera %s (%s x %s) in port %s selected." %(backendName,h,w, videoCaptureDeviceId))
-    camera.release()
-else:
-    raise Exception("Couldn't initialize selected camera.")
+
 
 def generate():
      while True:
@@ -87,3 +79,5 @@ def index():
 if __name__ == "__main__":
    #main(sys.argv[1:])
    app.run(host="0.0.0.0", port=4912, debug=True) 
+
+camera.release()
