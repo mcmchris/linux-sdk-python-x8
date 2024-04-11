@@ -50,32 +50,7 @@ def help():
     print('python classify.py <path_to_model.eim> <Camera port ID, only required when more than 1 camera is present>')
 
 
-global countPeople
-global inferenceSpeed
-try:
-    opts, args = getopt.getopt(argv, "h", ["--help"])
-except getopt.GetoptError:
-    help()
-    sys.exit(2)
-
-for opt, arg in opts:
-    if opt in ('-h', '--help'):
-        help()
-        sys.exit()
-
-if len(args) == 0:
-    help()
-    sys.exit(2)
-
-if len(args)>= 1:
-    videoCaptureDeviceId = int(args[0])
-else:
-    port_ids = get_webcams()
-    if len(port_ids) == 0:
-        raise Exception('Cannot find any webcams')
-    if len(args)<= 1 and len(port_ids)> 1:
-        raise Exception("Multiple cameras found. Add the camera port ID as a second argument to use to this script")
-    videoCaptureDeviceId = int(port_ids[0])
+videoCaptureDeviceId = int(1)
 
 camera = cv2.VideoCapture(videoCaptureDeviceId)
 ret = camera.read()[0]
