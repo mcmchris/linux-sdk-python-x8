@@ -67,7 +67,7 @@ def main(argv):
         help()
         sys.exit(2)
 
-    if len(args)>= 2:
+    if len(args)>= 1:
         videoCaptureDeviceId = int(args[1])
     else:
         port_ids = get_webcams()
