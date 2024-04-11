@@ -19,41 +19,10 @@ show_camera = False
 if (sys.platform == 'linux' and not os.environ.get('DISPLAY')):
     show_camera = False
 
-def now():
-    return round(time.time() * 1000)
 
-def get_webcams():
-    port_ids = []
-    for port in range(5):
-        print("Looking for a camera in port %s:" %port)
-        camera = cv2.VideoCapture(port)
-        if camera.isOpened():
-            ret = camera.read()[0]
-            if ret:
-                backendName =camera.getBackendName()
-                w = camera.get(3)
-                h = camera.get(4)
-                print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, port))
-                port_ids.append(port)
-            camera.release()
-    return port_ids
-
-def sigint_handler(sig, frame):
-    print('Interrupted')
-    if (runner):
-        runner.stop()
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, sigint_handler)
-
-def help():
-    print('python classify.py <path_to_model.eim> <Camera port ID, only required when more than 1 camera is present>')
-
-
-videoCaptureDeviceId = int(1)
+videoCaptureDeviceId = int(0)
 
 camera = cv2.VideoCapture(videoCaptureDeviceId)
-
 
 def generate():
      while True:
