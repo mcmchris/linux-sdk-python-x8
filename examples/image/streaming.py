@@ -94,6 +94,7 @@ def main(argv):
         if (next_frame > now()):
             time.sleep((next_frame - now()) / 1000)
         
+        ret, img = camera.read()[0]
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         ret, buffer = cv2.imencode('.jpg', img)
         
