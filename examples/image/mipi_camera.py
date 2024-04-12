@@ -1,68 +1,200 @@
+import argparse
 
-import select
-import v4l2capture #sudo apt-get install libv4l-dev && sudo pip install v4l2capture
-import cv2
-import numpy as np
-import time 
-i = 0
-image_width = 1280
-image_height = 800
+from v4l2py.device import Device, MenuControl, LegacyControl
 
-def print_message():
-    text = "This demo is used for Arducam ov9281 camera\r\n\
-    press 't' to save image\r\n\
-    press 'q' to exit demo\r\n"
-    print(text)
-def align_down(size, align):
-    return (size & ~((align)-1))
-def align_up(size, align):
-    return align_down(size + align - 1, align)
-'''
-convert to real 10 bit 
-'''
-def remove_padding(data, width, height, bit_width):
-    buff = np.frombuffer(data, np.uint8)
-    real_width = int(width / 8 * bit_width)
-    align_width = align_up(real_width, 32)
-    align_height = align_up(height, 16)
-    buff = buff.reshape(align_height, align_width)
-    buff = buff[:height, :real_width]
-    buff = buff.reshape(height, real_width)
- #   print(buff)
-    buff = buff.astype(np.uint16) << 2
-    # now convert to real 10 bit camera signal
-    for byte in range(4):
-        buff[:, byte::5] |= ((buff[:, 4::5] >> ((4 - byte) * 2)) & 0b11)
-    # delete the unused pix
-    buff = np.delete(buff, np.s_[4::5], 1)
-    return buff 
+
+def _get_ctrl(cam, control):
+    if control.isdigit() or control.startswith("0x"):
+        _ctrl = int(control, 0)
+    else:
+        _ctrl = control
+
+    try:
+        ctrl = cam.controls[_ctrl]
+    except KeyError:
+        return None
+    else:
+        return ctrl
+
+
+def show_control_status(device: str, legacy_controls: bool) -> None:
+    with Device(device, legacy_controls=legacy_controls) as cam:
+        print("Showing current status of all controls ...\n")
+        print(f"*** {cam.info.card} ***")
+
+        for cc in cam.controls.used_classes():
+            print(f"\n{cc.name.title()} Controls\n")
+
+            for ctrl in cam.controls.with_class(cc):
+                print("0x%08x:" % ctrl.id, ctrl)
+                if isinstance(ctrl, MenuControl):
+                    for key, value in ctrl.items():
+                        print(11 * " ", f" +-- {key}: {value}")
+                elif isinstance(ctrl, LegacyControl):
+                    for item in ctrl.menu.values():
+                        print(11 * " ", f" +-- {item}")
+        print("")
+
+
+def get_controls(device: str, controls: list, legacy_controls: bool) -> None:
+    with Device(device, legacy_controls=legacy_controls) as cam:
+        print("Showing current value of given controls ...\n")
+
+        for control in controls:
+            ctrl = _get_ctrl(cam, control)
+            if not ctrl:
+                print(f"{control}: unknown control")
+                continue
+
+            if not ctrl.is_flagged_write_only:
+                print(f"{control} = {ctrl.value}")
+            else:
+                print(f"{control} is write-only, thus cannot be read")
+        print("")
+
+
+def set_controls(
+    device: str, controls: list, legacy_controls: bool, clipping: bool
+) -> None:
+    controls = (
+        (ctrl.strip(), value.strip())
+        for (ctrl, value) in (c.split("=") for c in controls)
+    )
+
+    with Device(device, legacy_controls=legacy_controls) as cam:
+        print("Changing value of given controls ...\n")
+
+        cam.controls.set_clipping(clipping)
+        for control, value_new in controls:
+            ctrl = _get_ctrl(cam, control)
+            if not ctrl:
+                print(f"{control}: unknown control")
+                continue
+
+            if not ctrl.is_flagged_write_only:
+                value_old = ctrl.value
+            else:
+                value_old = "(write-only)"
+
+            try:
+                ctrl.value = value_new
+            except Exception as err:
+                success = False
+                reason = f"{err}"
+            else:
+                success = True
+
+            result = "%-5s" % ("OK" if success else "ERROR")
+
+            if success:
+                print(f"{result} {control}: {value_old} -> {value_new}\n")
+            else:
+                print(
+                    f"{result} {control}: {value_old} -> {value_new}\n{result} {reason}\n"
+                )
+
+
+def reset_controls(device: str, controls: list, legacy_controls: bool) -> None:
+    with Device(device, legacy_controls=legacy_controls) as cam:
+        print("Resetting given controls to default ...\n")
+
+        for control in controls:
+            ctrl = _get_ctrl(cam, control)
+            if not ctrl:
+                print(f"{control}: unknown control")
+                continue
+
+            try:
+                ctrl.set_to_default()
+            except Exception as err:
+                success = False
+                reason = f"{err}"
+            else:
+                success = True
+
+            result = "%-5s" % ("OK" if success else "ERROR")
+
+            if success:
+                print(f"{result} {control} reset to {ctrl.default}\n")
+            else:
+                print(f"{result} {control}:\n{result} {reason}\n")
+
+
+def reset_all_controls(device: str, legacy_controls: bool) -> None:
+    with Device(device, legacy_controls=legacy_controls) as cam:
+        print("Resetting all controls to default ...\n")
+        cam.controls.set_to_default()
+
+
+def csv(string: str) -> list:
+    return [v.strip() for v in string.split(",")]
+
+
 if __name__ == "__main__":
-    print_message()
-    # Open the video device.
-    video = v4l2capture.Video_device("/dev/video0")
-    # Create a buffer to store image data in. This must be done before
-    # calling 'start' if v4l2capture is compiled with libv4l2. Otherwise
-    # raises IOError.
-    video.create_buffers(3)
-    # Send the buffer to the device. Some devices require this to be done
-    # before calling 'start'.
-    video.queue_all_buffers()
-    # Start the device. This lights the LED if it's a camera that has one.
-    video.start()
-    select.select((video,), (), ())# Wait for the device to fill the buffer.
-    while True:
-        image_data = video.read_and_queue()
-        image_data = remove_padding(image_data,image_width,image_height,10)
-        image_data = cv2.cvtColor(image_data,46)
-        image_data = image_data>>2
-        image_data = image_data.astype(np.uint8)
-        cv2.imshow("Arudcam OV9281 Preview",image_data)
-        key= cv2.waitKey(delay=5)
-        if key == ord('t'):
-            cv2.imwrite(str(image_width)+"x"+str(image_height)+"_"+str(i)+'.jpg',image_data)
-            i+=1
-            print("Save image OK.")
-        if key == ord('q') or key == 27:
-            break
-    cv2.destroyAllWindows()
-    video.close()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--legacy",
+        default=False,
+        action="store_true",
+        help="use legacy controls (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--clipping",
+        default=False,
+        action="store_true",
+        help="when changing numeric controls, enforce the written value to be within allowed range (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="0",
+        metavar="<dev>",
+        help="use device <dev> instead of /dev/video0; if <dev> starts with a digit, then /dev/video<dev> is used",
+    )
+    parser.add_argument(
+        "--get-ctrl",
+        type=csv,
+        default=[],
+        metavar="<ctrl>[,<ctrl>...]",
+        help="get the values of the specified controls",
+    )
+    parser.add_argument(
+        "--set-ctrl",
+        type=csv,
+        default=[],
+        metavar="<ctrl>=<val>[,<ctrl>=<val>...]",
+        help="set the values of the specified controls",
+    )
+    parser.add_argument(
+        "--reset-ctrl",
+        type=csv,
+        default=[],
+        metavar="<ctrl>[,<ctrl>...]",
+        help="reset the specified controls to their default values",
+    )
+    parser.add_argument(
+        "--reset-all",
+        default=False,
+        action="store_true",
+        help="reset all controls to their default value",
+    )
+
+    args = parser.parse_args()
+
+    if args.device.isdigit():
+        dev = f"/dev/video{args.device}"
+    else:
+        dev = args.device
+
+    if args.reset_all:
+        reset_all_controls(dev, args.legacy)
+    elif args.reset_ctrl:
+        reset_controls(dev, args.reset_ctrl, args.legacy)
+    elif args.get_ctrl:
+        get_controls(dev, args.get_ctrl, args.legacy)
+    elif args.set_ctrl:
+        set_controls(dev, args.set_ctrl, args.legacy, args.clipping)
+    else:
+        show_control_status(dev, args.legacy)
+
+    print("Done.")
