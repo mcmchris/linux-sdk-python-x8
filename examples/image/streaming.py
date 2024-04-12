@@ -71,23 +71,23 @@ def main(argv):
     next_frame = 0 # limit to ~10 fps here
 
     while(True):
-        if (next_frame > now()):
-            time.sleep((next_frame - now()) / 1000)
+
         ret, img = camera.read()
         if ret:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             faces = face_detector.detectMultiScale(gray, 1.3, 5)
             for (x, y, w, h) in faces:
-                    cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0))
 
             #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            ret, buffer = cv2.imencode('.jpg', img)
-            
+            (ret, buffer) = cv2.imencode('.jpg', img)
+            if not ret:
+                continue
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
-        next_frame = now() + 10
+
 
 
 @app.route('/video_feed')
