@@ -19,7 +19,7 @@ def main(argv):
 
     while(True):
 
-        ret, img = camera.read()
+        ret, img = cap.read()
         if ret:
             #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             (ret, buffer) = cv2.imencode('.jpg', img)
