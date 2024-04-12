@@ -15,12 +15,17 @@ app = Flask(__name__, static_folder='templates/assets')
 videoCaptureDeviceId = int(1)
 
 camera = cv2.VideoCapture(videoCaptureDeviceId,cv2.CAP_DSHOW)
+face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
+     "haarcascade_frontalface_default.xml")
 
 def generate():
      while True:
           ret, frame = camera.read()
           if ret:
                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+               faces = face_detector.detectMultiScale(gray, 1.3, 5)
+               for (x, y, w, h) in faces:
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                (flag, encodedImage) = cv2.imencode(".jpg", frame)
                if not flag:
                     continue
@@ -35,7 +40,7 @@ def video_feed():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('streaming.html')
 
 if __name__ == "__main__":
    #main(sys.argv[1:])
