@@ -12,6 +12,10 @@ from flask import Flask, render_template, Response
 
 app = Flask(__name__, static_folder='templates/assets')
 
+camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
+    "haarcascade_frontalface_default.xml")
+
 def now():
     return round(time.time() * 1000)
 
@@ -31,19 +35,8 @@ def get_webcams():
             camera.release()
     return port_ids
 
-
     
-def generate():
-    #port_ids = get_webcams()
-    #if len(port_ids) == 0:
-    #   raise Exception('Cannot find any webcams')
-    videoCaptureDeviceId = int(1)
-
-    camera = cv2.VideoCapture(videoCaptureDeviceId, cv2.CAP_DSHOW)
-
-    face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
-        "haarcascade_frontalface_default.xml")
-    
+def generate():   
     while True:
         ret, frame = camera.read()
         if ret:
