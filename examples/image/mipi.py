@@ -18,7 +18,7 @@ def main(argv):
     
     print('camera opened, framing %dx%d' % (w,h))
     
-    print(cap.get())
+    print(cap.get(CAP_PROP_FOURCC))
 
     print(cap.read())
     #while(True):
