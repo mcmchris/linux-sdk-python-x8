@@ -10,7 +10,7 @@ h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 print('camera opened, framing %dx%d' % (w,h))
 
-print(cap.grab())
+print(cap.read())
 #while(True):
 #    ret, img = cap.read()
 #    if ret:
