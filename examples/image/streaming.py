@@ -77,7 +77,7 @@ def main(argv):
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             faces = face_detector.detectMultiScale(gray, 1.3, 5)
             for (x, y, w, h) in faces:
-                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0))
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0),2)
 
             #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             (ret, buffer) = cv2.imencode('.jpg', img)
