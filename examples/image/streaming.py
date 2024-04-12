@@ -19,8 +19,6 @@ def generate():
         ret, frame = camera.read()
         if ret:
             (flag, encodedImage) = cv2.imencode(".jpg", frame)
-            if not flag:
-                continue
             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                 bytearray(encodedImage) + b'\r\n')
 
