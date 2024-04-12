@@ -7,7 +7,7 @@ app = Flask(__name__, static_folder='templates/assets')
 
 def main(argv):
 
-    cap = cv2.VideoCapture('/dev/video0',cv2.CAP_ANY)
+    cap = cv2.VideoCapture('/dev/video0',cv2.CAP_GSTREAMER)
 
     if not cap.isOpened():
         print('Failed to open camera');
