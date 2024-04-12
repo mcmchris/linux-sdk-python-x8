@@ -20,7 +20,7 @@ def main(argv):
     while(True):
         ret, img = cap.read()
         if ret:
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            img = cv2.cvtColor(img, cv2.CV_BayerBG2BGR)
             (ret, buffer) = cv2.imencode('.jpg', img)
             if not ret:
                 continue
