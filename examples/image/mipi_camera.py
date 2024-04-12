@@ -3,7 +3,7 @@ import cv2 as cv
 import os
 import time
 
-cap = cv.VideoCapture('v4l2-ctl -d /dev/video0 --verbose --set-fmt-video=width=1920,height=1080,pixelformat=BG10 --stream-mmap --stream-count=1 --stream-to=raw1.raw', cv.CAP_GSTREAMER)
+cap = cv.VideoCapture('v4l2src device=/dev/video1 ! video/x-raw, format=NV12, width=640, height=480, framerate=30/1 ! videoconvert ! appsink', cv.CAP_GSTREAMER)
 
 if not cap.isOpened():
     print("Cannot capture from camera. Exiting.")
