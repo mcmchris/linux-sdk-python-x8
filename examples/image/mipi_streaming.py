@@ -17,18 +17,17 @@ def main(argv):
     
     print('camera opened, framing %dx%d' % (w,h))
     
-    print(cap.grab())
-    #while(True):
-    #    ret, img = cap.read()
-    #    if ret:
-    #        print(img)
-    #        #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    #        (ret, buffer) = cv2.imencode('.jpg', img)
-    #        if not ret:
-    #            continue
-    #        frame = buffer.tobytes()
-    #        yield (b'--frame\r\n'
-    #            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+    while(True):
+        ret, img = cap.read()
+        if ret:
+            print(img)
+            #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            (ret, buffer) = cv2.imencode('.jpg', img)
+            if not ret:
+                continue
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
 
 
