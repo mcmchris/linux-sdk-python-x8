@@ -1,25 +1,5 @@
-import numpy as np
-import cv2 as cv
 import os
-import time
 
-cap = cv.VideoCapture('gst-launch-1.0 -v v4l2src device=/dev/video0 ! video/x-bayer, format=bggr, width=640, height=480, framerate=30/1, bpp=8, ! multifilesink location=test%d.bayer')
-
-if not cap.isOpened():
-    print("Cannot capture from camera. Exiting.")
-    os._exit()
-last_time = time.time()
-
-while(True):
-
-    ret, frame = cap.read()
-    this_time = time.time()
-    print (str((this_time-last_time)*1000)+'ms')
-    last_time = this_time
-    cv.imshow('frame', frame)
-
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv.destroyAllWindows()
+os.system('gst-launch-1.0 -v v4l2src device=/dev/video0 num-buffers=1 ! "video/x-bayer, format=bggr, width=1920, height=1080, bpp=8, framerate=30/1" ! multifilesink location=test0.bayer')
+os.system('./bayer2rgb --input=test0.bayer --output=data.tiff --width=640 --height=480 --bpp=8 --first=BGGR \ --method=BILINEAR --tiff')
+os.system('convert data.tiff data.png')
