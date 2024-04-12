@@ -7,9 +7,6 @@ app = Flask(__name__, static_folder='templates/assets')
 
 camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 
-face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
-    "haarcascade_frontalface_default.xml")
-   
 def generate():   
     while True:
         ret, frame = camera.read()
