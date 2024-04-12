@@ -5,7 +5,7 @@ import cv2
 
 app = Flask(__name__, static_folder='templates/assets')
 
-camera = cv2.VideoCapture(1)
+camera = cv2.VideoCapture(0)
 
 def generate():   
     while True:
@@ -30,3 +30,6 @@ def index():
 if __name__ == "__main__":
    #main(sys.argv[1:])
    app.run(host="0.0.0.0", port=4912, debug=True) 
+
+
+camera.release()
