@@ -32,28 +32,30 @@ def get_webcams():
     return port_ids
 
 
-port_ids = get_webcams()
-if len(port_ids) == 0:
-    raise Exception('Cannot find any webcams')
-videoCaptureDeviceId = int(port_ids[0])
-
-camera = cv2.VideoCapture(videoCaptureDeviceId,cv2.CAP_DSHOW)
-face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
-     "haarcascade_frontalface_default.xml")
-
+    
 def generate():
-     while True:
-          ret, frame = camera.read()
-          if ret:
-               gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-               faces = face_detector.detectMultiScale(gray, 1.3, 5)
-               for (x, y, w, h) in faces:
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-               (flag, encodedImage) = cv2.imencode(".jpg", frame)
-               if not flag:
-                    continue
-               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                    bytearray(encodedImage) + b'\r\n')
+    port_ids = get_webcams()
+    if len(port_ids) == 0:
+        raise Exception('Cannot find any webcams')
+    videoCaptureDeviceId = int(port_ids[0])
+
+    camera = cv2.VideoCapture(videoCaptureDeviceId, cv2.CAP_DSHOW)
+    
+    face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
+        "haarcascade_frontalface_default.xml")
+    
+    while True:
+        ret, frame = camera.read()
+        if ret:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = face_detector.detectMultiScale(gray, 1.3, 5)
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            (flag, encodedImage) = cv2.imencode(".jpg", frame)
+            if not flag:
+                continue
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                bytearray(encodedImage) + b'\r\n')
 
 @app.route('/video_feed')
 def video_feed():
