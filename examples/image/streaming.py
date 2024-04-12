@@ -14,7 +14,6 @@ if camera.isOpened():
         h = camera.get(4)
         print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, 1))
 
-    camera.release()
     
 def generate():   
     while True:
