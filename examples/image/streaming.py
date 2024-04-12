@@ -1,27 +1,11 @@
 #!/usr/bin/env python
 
-import device_patches       # Device specific patches for Jetson Nano (needs to be before importing cv2)
-
-import cv2
-import os
-import sys, getopt
-import signal
-import time
 from flask import Flask, render_template, Response
-
+import cv2
 
 app = Flask(__name__, static_folder='templates/assets')
 
-camera = cv2.VideoCapture(1)
-ret = camera.read()[0]
-if ret:
-    backendName = camera.getBackendName()
-    w = camera.get(3)
-    h = camera.get(4)
-    print("Camera %s (%s x %s) in port %s selected." %(backendName,h,w, 1))
-    camera.release()
-else:
-    raise Exception("Couldn't initialize selected camera.")
+camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
     "haarcascade_frontalface_default.xml")
