@@ -66,16 +66,17 @@ def main(argv):
 
     next_frame = 0 # limit to ~10 fps here
 
-    for res, img in camera.read():
+    while(True):
         if (next_frame > now()):
             time.sleep((next_frame - now()) / 1000)
-        
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        ret, buffer = cv2.imencode('.jpg', img)
-        
-        frame = buffer.tobytes()
-        yield (b'--frame\r\n'
-            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+        ret, frame = camera.read()
+        if ret:
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            ret, buffer = cv2.imencode('.jpg', img)
+            
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
         next_frame = now() + 10
 
