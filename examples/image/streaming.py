@@ -34,13 +34,13 @@ def get_webcams():
 
     
 def generate():
-    port_ids = get_webcams()
-    if len(port_ids) == 0:
-        raise Exception('Cannot find any webcams')
-    videoCaptureDeviceId = int(port_ids[0])
+    #port_ids = get_webcams()
+    #if len(port_ids) == 0:
+    #   raise Exception('Cannot find any webcams')
+    videoCaptureDeviceId = int(1)
 
     camera = cv2.VideoCapture(videoCaptureDeviceId, cv2.CAP_DSHOW)
-    
+
     face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
         "haarcascade_frontalface_default.xml")
     
