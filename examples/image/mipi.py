@@ -1,11 +1,22 @@
 import cv2
 
-#cap = cv2.VideoCapture(0,cv2.CAP_V4L)
-cap = cv2.VideoCapture("v4l2src device=/dev/video0 ! video/x-raw,format=BG10,width=640,height=480,framerate=30/1 ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1", cv2.CAP_GSTREAMER)
+cap = cv2.VideoCapture('/dev/video0',cv2.CAP_V4L)
 
+if not cap.isOpened():
+	print('Failed to open camera');
+	exit(-1)
+w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+fps = float(cap.get(cv2.CAP_PROP_FPS))
+print('camera opened, framing %dx%d@%f fps' % (w,h,fps))
 
-print (cap.isOpened())
-print(cap.grab())
-print(cap.read())
-
+while True:
+	ret,frame = cap.read()
+	if not ret:
+		print('Failed to read from camera')
+		cap.release()
+		exit(-3)
+	cv2.imshow('Test', frame)
+	cv2.waitKey(1)
+	
 cap.release()
