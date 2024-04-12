@@ -54,6 +54,10 @@ def main(argv):
         videoCaptureDeviceId = int(port_ids[0])
 
     camera = cv2.VideoCapture(videoCaptureDeviceId)
+
+    face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
+     "haarcascade_frontalface_default.xml")
+
     ret = camera.read()[0]
     if ret:
         backendName = camera.getBackendName()
@@ -71,7 +75,12 @@ def main(argv):
             time.sleep((next_frame - now()) / 1000)
         ret, img = camera.read()
         if ret:
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = face_detector.detectMultiScale(gray, 1.3, 5)
+            for (x, y, w, h) in faces:
+                    cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             ret, buffer = cv2.imencode('.jpg', img)
             
             frame = buffer.tobytes()
