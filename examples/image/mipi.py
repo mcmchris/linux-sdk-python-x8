@@ -17,7 +17,7 @@ def main(argv):
     
     print('camera opened, framing %dx%d' % (w,h))
     
-    print(cap.retrieve())
+    print(cap.grab())
     #while(True):
     #    ret, img = cap.read()
     #    if ret:
