@@ -3,7 +3,7 @@ import cv2 as cv
 import os
 import time
 
-cap = cv.VideoCapture('gst-launch-1.0 -v v4l2src device=/dev/video0 ! video/x-bayer, format=bggr, width=640, height=480, framerate=30/1, bpp=8, ! videoconvert ! appsink')
+cap = cv.VideoCapture('gst-launch-1.0 -v v4l2src device=/dev/video0 ! video/x-bayer, format=bggr, width=640, height=480, framerate=30/1, bpp=8, ! multifilesink location=test%d.bayer')
 
 if not cap.isOpened():
     print("Cannot capture from camera. Exiting.")
