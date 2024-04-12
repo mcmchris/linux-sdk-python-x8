@@ -12,7 +12,30 @@ from flask import Flask, render_template, Response
 
 app = Flask(__name__, static_folder='templates/assets')
 
-videoCaptureDeviceId = int(0)
+def now():
+    return round(time.time() * 1000)
+
+def get_webcams():
+    port_ids = []
+    for port in range(5):
+        print("Looking for a camera in port %s:" %port)
+        camera = cv2.VideoCapture(port)
+        if camera.isOpened():
+            ret = camera.read()[0]
+            if ret:
+                backendName =camera.getBackendName()
+                w = camera.get(3)
+                h = camera.get(4)
+                print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, port))
+                port_ids.append(port)
+            camera.release()
+    return port_ids
+
+
+port_ids = get_webcams()
+if len(port_ids) == 0:
+    raise Exception('Cannot find any webcams')
+videoCaptureDeviceId = int(port_ids[0])
 
 camera = cv2.VideoCapture(videoCaptureDeviceId,cv2.CAP_DSHOW)
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
