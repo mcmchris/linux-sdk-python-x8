@@ -12,7 +12,7 @@ from flask import Flask, render_template, Response
 
 app = Flask(__name__, static_folder='templates/assets')
 
-videoCaptureDeviceId = int(1)
+videoCaptureDeviceId = int(0)
 
 camera = cv2.VideoCapture(videoCaptureDeviceId,cv2.CAP_DSHOW)
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
