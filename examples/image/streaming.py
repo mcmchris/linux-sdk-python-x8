@@ -15,27 +15,7 @@ app = Flask(__name__, static_folder='templates/assets')
 camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
     "haarcascade_frontalface_default.xml")
-
-def now():
-    return round(time.time() * 1000)
-
-def get_webcams():
-    port_ids = []
-    for port in range(5):
-        print("Looking for a camera in port %s:" %port)
-        camera = cv2.VideoCapture(port)
-        if camera.isOpened():
-            ret = camera.read()[0]
-            if ret:
-                backendName =camera.getBackendName()
-                w = camera.get(3)
-                h = camera.get(4)
-                print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, port))
-                port_ids.append(port)
-            camera.release()
-    return port_ids
-
-    
+   
 def generate():   
     while True:
         ret, frame = camera.read()
@@ -43,7 +23,7 @@ def generate():
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             faces = face_detector.detectMultiScale(gray, 1.3, 5)
             for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0))
             (flag, encodedImage) = cv2.imencode(".jpg", frame)
             if not flag:
                 continue
