@@ -15,9 +15,11 @@ def main(argv):
         exit(-1)
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
+    
     print('camera opened, framing %dx%d' % (w,h))
     
+    print(cap.get(cv.CAP_PROP_FORMAT))
+
     print(cap.read())
     #while(True):
     #    ret, img = cap.read()
