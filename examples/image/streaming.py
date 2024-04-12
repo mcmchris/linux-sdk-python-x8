@@ -13,10 +13,10 @@ if camera.isOpened():
         w = camera.get(3)
         h = camera.get(4)
         print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, 1))
-    frame = camera.read()[1]
+
 def generate():   
     while True:
-        #ret, frame = camera.read()
+        ret, frame = camera.read()
         if ret:
             (flag, encodedImage) = cv2.imencode(".jpg", frame)
             if not flag:
