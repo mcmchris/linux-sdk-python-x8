@@ -18,9 +18,9 @@ def main(argv):
     print('camera opened, framing %dx%d' % (w,h))
 
     while(True):
-
         ret, img = cap.read()
         if ret:
+            print(img)
             #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             (ret, buffer) = cv2.imencode('.jpg', img)
             if not ret:
