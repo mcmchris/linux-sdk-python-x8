@@ -6,7 +6,7 @@ import cv2
 app = Flask(__name__, static_folder='templates/assets')
 
 camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-res = 
+
 def generate():   
     while True:
         ret, frame = camera.read()
