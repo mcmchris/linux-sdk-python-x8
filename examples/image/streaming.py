@@ -69,7 +69,7 @@ def main(argv):
     while(True):
         if (next_frame > now()):
             time.sleep((next_frame - now()) / 1000)
-        ret, frame = camera.read()
+        ret, img = camera.read()
         if ret:
             img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             ret, buffer = cv2.imencode('.jpg', img)
