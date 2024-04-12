@@ -5,14 +5,14 @@ import cv2
 
 app = Flask(__name__, static_folder='templates/assets')
 
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(1)
 if camera.isOpened():
     ret = camera.read()[0]
     if ret:
         backendName =camera.getBackendName()
         w = camera.get(3)
         h = camera.get(4)
-        print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, 0))
+        print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, 1))
 
     camera.release()
     
