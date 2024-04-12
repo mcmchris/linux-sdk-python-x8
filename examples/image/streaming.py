@@ -14,7 +14,7 @@ app = Flask(__name__, static_folder='templates/assets')
 
 videoCaptureDeviceId = int(1)
 
-camera = cv2.VideoCapture(videoCaptureDeviceId)
+camera = cv2.VideoCapture(videoCaptureDeviceId,cv2.CAP_DSHOW)
 
 def generate():
      while True:
