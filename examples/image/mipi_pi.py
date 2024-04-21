@@ -1,25 +1,10 @@
-import cv2
+from picamera2 import Picamera2, Preview
+import time
 
-cap = cv2.VideoCapture('/dev/video2')
-
-if not cap.isOpened():
-    print('Failed to open camera');
-    exit(-1)
-w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-print('camera opened, framing %dx%d' % (w,h))
-
-print(cap.read())
-#while(True):
-#    ret, img = cap.read()
-#    if ret:
-#        print(img)
-#        #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-#        (ret, buffer) = cv2.imencode('.jpg', img)
-#        if not ret:
-#            continue
-#        frame = buffer.tobytes()
-#        yield (b'--frame\r\n'
-#            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
-
+picam2 = Picamera2()
+camera_config = picam2.create_preview_configuration()
+picam2.configure(camera_config)
+picam2.start_preview(Preview.DRM)
+picam2.start()
+time.sleep(2)
+picam2.capture_file("captures/test1.jpg")
