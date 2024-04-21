@@ -1,6 +1,6 @@
 import cv2
 
-cap = cv2.VideoCapture('/dev/video2',cv2.CAP_V4L2)
+cap = cv2.VideoCapture('/dev/video2')
 
 if not cap.isOpened():
     print('Failed to open camera');
