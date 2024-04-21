@@ -6,7 +6,9 @@ picam2 = Picamera2()
 
 picam2.preview_configuration.main.size = (1920, 1080)
 picam2.preview_configuration.main.format = "YUV420"
-picam2.configure(preview_config)
+picam2.preview_configuration.align()
+picam2.configure("preview")
+
 
 picam2.start_preview(Preview.DRM)
 # picam2.start_preview(Preview.NULL)
