@@ -1,63 +1,40 @@
-import picamera2 #camera module for RPi camera
-from picamera2 import Picamera2
-from picamera2.encoders import JpegEncoder, H264Encoder
-from picamera2.outputs import FileOutput, FfmpegOutput
-import io
-
-import subprocess
+import cv2
+import time
+import sys, getopt
 from flask import Flask, render_template, Response
-import atexit
-from datetime import datetime
-from threading import Condition
-import time 
 
 app = Flask(__name__, static_folder='templates/assets')
 
-class Camera:
-	def __init__(self):
-		self.camera = picamera2.Picamera2()
-		self.camera.configure(self.camera.create_video_configuration(main={"size": (640, 480)}))
-		self.encoder = JpegEncoder()
-		self.fileOut = FfmpegOutput('test2.mp4', audio=False) #StreamingOutput()
-		self.streamOut = StreamingOutput()
-		self.streamOut2 = FileOutput(self.streamOut)
-		self.encoder.output = [self.fileOut, self.streamOut2]
-		
-		self.camera.start_encoder(self.encoder) 
-		self.camera.start() 
-		
-	def get_frame(self):	
-		self.camera.start()
-		with self.streamOut.condition:
-			self.streamOut.condition.wait()
-			self.frame = self.streamOut.frame
-		return self.frame
+def main(argv):
 
-		
-class StreamingOutput(io.BufferedIOBase):
-	def __init__(self):
-		self.frame = None
-		self.condition = Condition()
+    cap = cv2.VideoCapture('/dev/video2',cv2.CAP_FFMPEG)
+    
+    if not cap.isOpened():
+        print('Failed to open camera');
+        exit(-1)
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    print('camera opened, framing %dx%d' % (w,h))
+    
+    while(True):
+        ret, img = cap.read()
+        if ret:
+            #img = cv2.cvtColor(img, cv2.COLOR_BayerBGGR2RGB)
+            (ret, buffer) = cv2.imencode('.jpg', img)
+            if not ret:
+                continue
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
-	def write(self, buf):
-		with self.condition:
-			self.frame = buf
-			self.condition.notify_all()
-		
-#defines the function that generates our frames
-camera = Camera()
 
-def genFrames():
-	while True:
-		frame = camera.get_frame()
-		yield (b'--frame\r\n'
-			   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-            
+
 @app.route('/video_feed')
 def video_feed():
     #Video streaming route. Put this in the src attribute of an img tag
-    return Response(genFrames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(main(sys.argv[1:]), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/')
