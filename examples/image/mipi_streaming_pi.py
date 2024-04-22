@@ -1,46 +1,30 @@
-import cv2
+#!/usr/bin/python3
+
+import socket
 import time
-import sys, getopt
-from flask import Flask, render_template, Response
 
-app = Flask(__name__, static_folder='templates/assets')
+from picamera2 import Picamera2
+from picamera2.encoders import H264Encoder
+from picamera2.outputs import FileOutput
 
-def main(argv):
+picam2 = Picamera2()
+video_config = picam2.create_video_configuration({"size": (1920, 1080)})
+picam2.configure(video_config)
+encoder = H264Encoder(1000000)
 
-    cap = cv2.VideoCapture(2)
-    
-    if not cap.isOpened():
-        print('Failed to open camera');
-        exit(-1)
-    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    
-    print('camera opened, framing %dx%d' % (w,h))
-    
-    while(True):
-        ret, img = cap.read()
-        if ret:
-            #img = cv2.cvtColor(img, cv2.COLOR_BayerBGGR2RGB)
-            (ret, buffer) = cv2.imencode('.jpg', img)
-            if not ret:
-                continue
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(("0.0.0.0", 4912))
+    sock.listen()
 
+    picam2.encoders = encoder
 
-
-
-@app.route('/video_feed')
-def video_feed():
-    #Video streaming route. Put this in the src attribute of an img tag
-    return Response(main(sys.argv[1:]), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-@app.route('/')
-def index():
-    return render_template('streaming.html')
-
-if __name__ == "__main__":
-   #main(sys.argv[1:])
-   app.run(host="0.0.0.0", port=4912, debug=True) 
+    conn, addr = sock.accept()
+    stream = conn.makefile("wb")
+    encoder.output = FileOutput(stream)
+    picam2.start_encoder(encoder)
+    picam2.start()
+    time.sleep(20)
+    picam2.stop()
+    picam2.stop_encoder()
+    conn.close()
