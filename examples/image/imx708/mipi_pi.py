@@ -10,8 +10,8 @@ picam2.preview_configuration.main.size = (1920, 1080)
 picam2.configure("preview")
 
 
-#picam2.start_preview(Preview.DRM)
-picam2.start_preview(Preview.NULL)
+picam2.start_preview(Preview.DRM)
+#picam2.start_preview(Preview.NULL)
 
 picam2.start()
 time.sleep(30)
