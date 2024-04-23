@@ -1,6 +1,8 @@
 import cv2
 
-cap = cv2.VideoCapture(cv2.CAP_V4L2)
+#cap = cv2.VideoCapture(cv2.CAP_V4L2)
+
+cap = cv2.VideoCapture("nvarguscamerasrc ! video/x-raw(memory:MVMM),format=NV12,width=640,height=480,framerate=30/1 ! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1", cv2.CAP_GSTREAMER)
 
 if not cap.isOpened():
     print('Failed to open camera');
