@@ -5,8 +5,8 @@ from picamera2 import Picamera2, Preview
 picam2 = Picamera2()
 
 picam2.preview_configuration.main.size = (1920, 1080)
-picam2.preview_configuration.main.format = "YUV420"
-picam2.preview_configuration.align()
+#picam2.preview_configuration.main.format = "YUV420"
+#picam2.preview_configuration.align()
 picam2.configure("preview")
 
 
