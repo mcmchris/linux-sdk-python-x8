@@ -10,13 +10,13 @@ picam2.preview_configuration.align()
 picam2.configure("preview")
 
 
-picam2.start_preview(Preview.DRM)
-# picam2.start_preview(Preview.NULL)
+#picam2.start_preview(Preview.DRM)
+picam2.start_preview(Preview.NULL)
 
 picam2.start()
 time.sleep(30)
 
-#metadata = picam2.capture_file("test.jpg")
-#print(metadata)
+metadata = picam2.capture_file("test.jpg")
+print(metadata)
 
 picam2.close()
