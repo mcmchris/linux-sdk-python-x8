@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import device_patches       # Device specific patches for Jetson Nano (needs to be before importing cv2)
+
 import cv2
 import time
 import sys, getopt
@@ -37,6 +39,10 @@ def main(argv):
         help()
         sys.exit(2)
 
+    if len(args) == 0:
+        help()
+        sys.exit(2)
+
     if len(args)>= 1:
         videoCaptureDeviceId = int(args[0])
     else:
@@ -47,7 +53,10 @@ def main(argv):
             raise Exception("Multiple cameras found. Add the camera port ID as a second argument to use to this script")
         videoCaptureDeviceId = int(port_ids[0])
 
-    camera = cv2.VideoCapture(8)
+    camera = cv2.VideoCapture(videoCaptureDeviceId)
+
+    face_detector = cv2.CascadeClassifier(cv2.data.haarcascades +
+     "haarcascade_frontalface_default.xml")
 
     ret = camera.read()[0]
     if ret:
@@ -66,6 +75,10 @@ def main(argv):
         ret, img = camera.read()
         if ret:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = face_detector.detectMultiScale(gray, 1.3, 5)
+            for (x, y, w, h) in faces:
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0),2)
+
             #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             (ret, buffer) = cv2.imencode('.jpg', img)
             if not ret:
