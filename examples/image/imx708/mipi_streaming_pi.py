@@ -1,34 +1,57 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
-import socket
+import cv2
 import time
 import sys, getopt
 from flask import Flask, render_template, Response
+from picamera2 import MappedArray, Picamera2, Preview
 
-from picamera2 import Picamera2
-from picamera2.encoders import H264Encoder
-from picamera2.outputs import FileOutput
-
-picam2 = Picamera2()
-video_config = picam2.create_video_configuration({"size": (1920, 1080)})
-picam2.configure(video_config)
-encoder = H264Encoder(1000000)
+normalSize = (640, 480)
+lowresSize = (320, 240)
 
 app = Flask(__name__, static_folder='templates/assets')
 
+def now():
+    return round(time.time() * 1000)
+
+def get_webcams():
+    port_ids = []
+    for port in range(5):
+        print("Looking for a camera in port %s:" %port)
+        camera = cv2.VideoCapture(port)
+        if camera.isOpened():
+            ret = camera.read()[0]
+            if ret:
+                backendName =camera.getBackendName()
+                w = camera.get(3)
+                h = camera.get(4)
+                print("Camera %s (%s x %s) found in port %s " %(backendName,h,w, port))
+                port_ids.append(port)
+            camera.release()
+    return port_ids
+
+def help():
+    print('python classify.py <path_to_model.eim> <Camera port ID, only required when more than 1 camera is present>')
+
 def main(argv):
 
-    while(True):
-        picam2.encoders = encoder
-        
-        if ret:
-            #img = cv2.cvtColor(img, cv2.COLOR_BayerBGGR2RGB)
-            (ret, buffer) = cv2.imencode('.jpg', img)
-            if not ret:
-                continue
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+    picam2 = Picamera2()
+    picam2.start_preview(Preview.DRM, x=0, y=0, width=1920, height=1080)
+    config = picam2.create_preview_configuration(main={"size": normalSize},
+                                                 lores={"size": lowresSize, "format": "YUV420"})
+    picam2.configure(config)
+
+    stride = picam2.stream_configuration("lores")["stride"]
+    #picam2.post_callback = DrawRectangles
+
+    picam2.start()
+
+    while True:
+        buffer = picam2.capture_buffer("lores")
+        grey = buffer[:stride * lowresSize[1]].reshape((lowresSize[1], stride))
+        frame = grey.tobytes()
+        yield (b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
 
 
