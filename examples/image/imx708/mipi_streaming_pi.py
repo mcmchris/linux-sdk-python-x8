@@ -49,9 +49,12 @@ def main(argv):
     while True:
         buffer = picam2.capture_buffer("lores")
         grey = buffer[:stride * lowresSize[1]].reshape((lowresSize[1], stride))
-        #frame = grey.tobytes()
+        (ret, buffer) = cv2.imencode('.jpg', grey)
+        if not ret:
+            continue
+        frame = buffer.tobytes()
         yield (b'--frame\r\n'
-            b'Content-Type: image/jpeg\r\n\r\n' + grey + b'\r\n')  # concat frame one by one and show result
+            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
 
 
