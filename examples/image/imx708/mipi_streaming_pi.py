@@ -41,15 +41,15 @@ def main(argv):
                                                  lores={"size": lowresSize, "format": "YUV420"})
     picam2.configure(config)
 
-    stride = picam2.stream_configuration("main")["stride"]
+    stride = picam2.stream_configuration("lores")["stride"]
     #picam2.post_callback = DrawRectangles
 
     picam2.start()
 
     while True:
         buffer = picam2.capture_buffer("lores")
-        grey = buffer[:stride * lowresSize[1]].reshape((lowresSize[1], stride))
-        (ret, buffer) = cv2.imencode('.jpg', grey)
+        #grey = buffer[:stride * lowresSize[1]].reshape((lowresSize[1], stride))
+        (ret, buffer) = cv2.imencode('.jpg', buffer)
         if not ret:
             continue
         frame = buffer.tobytes()
