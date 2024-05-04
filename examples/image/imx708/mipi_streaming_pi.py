@@ -48,8 +48,8 @@ def main(argv):
 
     while True:
         buffer = picam2.capture_buffer("lores")
-        #grey = buffer[:stride * lowresSize[1]].reshape((lowresSize[1], stride))
-        (ret, buffer) = cv2.imencode('.jpg', buffer)
+        grey = buffer[:stride * lowresSize[1]].reshape((lowresSize[1], stride))
+        (ret, buffer) = cv2.imencode('.jpg', grey)
         if not ret:
             continue
         frame = buffer.tobytes()
