@@ -47,7 +47,7 @@ def main(argv):
     picam2.start()
 
     while True:
-        buffer = picam2.capture_buffer("lores")
+        buffer = picam2.capture_array("lores")
         rgb = cv2.cvtColor(buffer, cv2.COLOR_YUV420p2RGB)
         grey = buffer[:stride * lowresSize[1]].reshape((lowresSize[1], stride))
         (ret, buffer) = cv2.imencode('.jpg', rgb)
